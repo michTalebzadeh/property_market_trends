@@ -48,6 +48,9 @@ Run the script using Python 3:
 
 python3 src/uk_house_prices.py
 
+or Run the script using spark-submit:
+
+$SPARK_HOME/bin/spark-submit --master local[1] src/uk_house_prices.py
 ## Classes
 
 ### DataFrameProcessor
