@@ -415,7 +415,7 @@ def main():
   
     df_processor.analyze_uk_ownership(house_df)  
 
-    """
+    
     RegionName = 'Kensington and Chelsea'
     new_string = RegionName.replace(" ", "")
         
@@ -423,7 +423,7 @@ def main():
     predictor = PropertyPricePredictor(data)
     
     predictor.train_and_predict(RegionName , 'Average Price')
-    """
+    
       # Stop the SparkSession
     spark.stop()
 
