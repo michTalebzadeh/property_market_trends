@@ -35,12 +35,11 @@ This project analyzes UK house prices using Spark and various machine learning m
 
 ## Usage
 
-To run the project, execute the main script located in the `src` directory:
+To run the project, clone the repository and execute the main script located in the src directory. Detailed instructions are provided in the README.md.
 
-```bash
-cd /home/hduser/dba/bin/python/property_market_trends
+git clone https://github.com/michTalebzadeh/property_market_trends.git
+cd property_market_trends
 python src/uk_house_prices.py
-```
 
 ## Classes
 
