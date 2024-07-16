@@ -80,32 +80,37 @@ def create_png_dir():
     # Create the directory if it does not exist
     if not os.path.exists(PNG_DIR):
         os.makedirs(PNG_DIR)
+
     print(f"PNG directory created at: {PNG_DIR}")
+def load_json_data():
+    # Load data from JSON file
+    with open('/home/hduser/dba/bin/python/genai/data/property_data.json', 'r') as f:
+       data = json.load(f)
+    return data
+    
+# Load data from Hive table
+def load_hive_data(spark):
+    DSDB = "DS"
+    tableName = "ukhouseprices"
+    fullyQualifiedTableName = f"{DSDB}.{tableName}"
+    if spark.sql(f"SHOW TABLES IN {DSDB} LIKE '{tableName}'").count() == 1:
+       spark.sql(f"ANALYZE TABLE {fullyQualifiedTableName} COMPUTE STATISTICS")
+       rows = spark.sql(f"SELECT COUNT(1) FROM {fullyQualifiedTableName}").collect()[0][0]
+       print(f"\nTotal number of rows in table {fullyQualifiedTableName} is {rows}\n")
+    else:
+       print(f"No such table {fullyQualifiedTableName}")
+       sys.exit(1)
+        
+    # create a dataframe from the loaded data
+    house_df = spark.sql(f"SELECT * FROM {fullyQualifiedTableName}")
+    house_df.printSchema()
+    return house_df     
 
 class DataFrameProcessor:
     def __init__(self, spark, data):
         self.spark = spark
         self.sdata = data
 
-    # Load data from Hive table
-    def load_data(self):
-        DSDB = "DS"
-        tableName = "ukhouseprices"
-        fullyQualifiedTableName = f"{DSDB}.{tableName}"
-        if self.spark.sql(f"SHOW TABLES IN {DSDB} LIKE '{tableName}'").count() == 1:
-            self.spark.sql(f"ANALYZE TABLE {fullyQualifiedTableName} COMPUTE STATISTICS")
-            rows = self.spark.sql(f"SELECT COUNT(1) FROM {fullyQualifiedTableName}").collect()[0][0]
-            print(f"\nTotal number of rows in table {fullyQualifiedTableName} is {rows}\n")
-        else:
-            print(f"No such table {fullyQualifiedTableName}")
-            sys.exit(1)
-        
-        # create a dataframe from the loaded data
-        house_df = self.spark.sql(f"SELECT * FROM {fullyQualifiedTableName}")
-        house_df.printSchema()
-        return house_df     
-
- 
     def freedman_diaconis_bins(self, data):
         """
         Calculates the optimal number of bins using the Freedman-Diaconis rule.
@@ -399,29 +404,24 @@ def main():
     sc = spark.sparkContext
     sc.setLogLevel("ERROR")
     
+    # Load data from Hive tables
+    house_df = load_hive_data(spark)
     # Load data from JSON file
-    with open('/home/hduser/dba/bin/python/genai/data/property_data.json', 'r') as f:
-       data = json.load(f)
+    data = load_json_data()
     
-   
     # Create DataFrameProcessor instance
     df_processor = DataFrameProcessor(spark, data)
-
-    # Load data from Hive tables
-    house_df = df_processor.load_data()
 
     total_data_count = house_df.count()
     print(f"Total data count: {total_data_count}")
   
     df_processor.analyze_uk_ownership(house_df)  
-
     
     RegionName = 'Kensington and Chelsea'
     new_string = RegionName.replace(" ", "")
         
     # Create PropertyPricePredictordata instance
-    predictor = PropertyPricePredictor(data)
-    
+    predictor = PropertyPricePredictor(data)  
     predictor.train_and_predict(RegionName , 'Average Price')
     
       # Stop the SparkSession
