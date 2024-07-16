@@ -41,7 +41,12 @@ To run the project, clone the repository and execute the main script located in 
 ```bash
 git clone https://github.com/michTalebzadeh/property_market_trends.git
 cd property_market_trends
-python src/uk_house_prices.py
+
+Running the Script
+
+Run the script using Python 3:
+
+python3 src/uk_house_prices.py
 
 ## Classes
 
